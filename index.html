@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Nejashi Online Marketing - Mini App</title>
+  <!-- Telegram Web App Script -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #0F5132;        /* የነጃሺ ኤመራልድ አረንጓዴ */
+      --primary-light: #E8F5E9;
+      --accent: #E5A93C;         /* ወርቃማ ቀለም */
+      --dark: #121816;
+      --card-bg: #FFFFFF;
+      --bg: #F4F6F5;
+      --text-muted: #6C7A74;
+      --border: #E2E8E5;
+      --radius: 16px;
+      --font: 'Plus Jakarta Sans', system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg); color: var(--dark); padding-bottom: 90px; }
+
+    /* Header */
+    header {
+      background: var(--card-bg);
+      padding: 16px 20px 12px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .brand-title { display: flex; align-items: center; gap: 10px; }
+    .logo-badge {
+      width: 40px; height: 40px; border-radius: 12px; background: var(--primary);
+      display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 18px;
+    }
+    .brand h1 { font-size: 17px; font-weight: 700; color: var(--dark); line-height: 1.2; }
+    .brand p { font-size: 12px; color: var(--text-muted); }
+    .verified-badge {
+      background: var(--primary-light); color: var(--primary); font-size: 11px;
+      font-weight: 600; padding: 4px 8px; border-radius: 99px;
+    }
+
+    /* Search */
+    .search-box { position: relative; }
+    .search-box input {
+      width: 100%; padding: 12px 14px 12px 40px; border: 1px solid var(--border);
+      background: var(--bg); border-radius: 12px; font-size: 14px; outline: none; transition: 0.2s;
+    }
+    .search-box input:focus { border-color: var(--primary); background: #fff; }
+    .search-box svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 18px; color: var(--text-muted); }
+
+    /* Categories */
+    .categories {
+      display: flex; gap: 8px; overflow-x: auto; padding: 12px 20px;
+      scrollbar-width: none; -ms-overflow-style: none;
+    }
+    .categories::-webkit-scrollbar { display: none; }
+    .cat-btn {
+      white-space: nowrap; padding: 8px 16px; border-radius: 99px; font-size: 13px; font-weight: 600;
+      background: var(--card-bg); border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; transition: 0.2s;
+    }
+    .cat-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    /* Product Grid */
+    .container { padding: 0 20px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px; }
+    .card {
+      background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border);
+      overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; transition: 0.2s;
+    }
+    .card:active { transform: scale(0.98); }
+    .card-img { width: 100%; aspect-ratio: 1/1; object-fit: cover; background: #eee; }
+    .card-body { padding: 12px; display: flex; flex-direction: column; gap: 6px; flex-grow: 1; }
+    .card-cat { font-size: 11px; color: var(--accent); font-weight: 700; text-transform: uppercase; }
+    .card-title { font-size: 13px; font-weight: 600; line-height: 1.35; color: var(--dark); height: 36px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); }
+    .price { font-size: 15px; font-weight: 800; color: var(--primary); }
+    .add-btn {
+      width: 34px; height: 34px; border-radius: 10px; background: var(--primary-light);
+      border: 0; color: var(--primary); display: grid; place-items: center; cursor: pointer; font-size: 18px; font-weight: bold;
+    }
+
+    /* Bottom Floating Cart Bar */
+    .cart-bar {
+      position: fixed; bottom: 16px; left: 20px; right: 20px;
+      background: var(--primary); color: #fff; border-radius: 16px;
+      padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 10px 25px rgba(15, 81, 50, 0.35); z-index: 100; cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .cart-bar.hide { transform: translateY(120%); opacity: 0; pointer-events: none; }
+    .cart-info { display: flex; align-items: center; gap: 12px; }
+    .cart-count { background: var(--accent); color: #1a1a1a; font-weight: 800; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; }
+    .cart-text { font-size: 14px; font-weight: 600; }
+    .cart-total { font-size: 16px; font-weight: 800; }
+
+    /* Modal / Drawer */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 120;
+      opacity: 0; pointer-events: none; transition: 0.3s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+    .drawer {
+      position: fixed; bottom: 0; left: 0; right: 0; background: #fff;
+      border-radius: 24px 24px 0 0; padding: 24px 20px; z-index: 130;
+      transform: translateY(100%); transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 85vh; overflow-y: auto;
+    }
+    .drawer.open { transform: translateY(0); }
+    .drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .drawer-title { font-size: 18px; font-weight: 700; }
+    .close-btn { background: none; border: 0; font-size: 24px; color: var(--text-muted); cursor: pointer; }
+
+    /* Cart Items in Drawer */
+    .cart-items { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+    .cart-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+    .item-meta h4 { font-size: 13px; font-weight: 600; }
+    .item-meta p { font-size: 12px; color: var(--primary); font-weight: 700; margin-top: 2px; }
+    .qty-ctl { display: flex; align-items: center; gap: 10px; }
+    .qty-btn { width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); font-weight: bold; cursor: pointer; }
+
+    /* Form Fields */
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+    .form-group input, .form-group select {
+      width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; outline: none; background: var(--bg);
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--primary); background: #fff; }
+    .checkout-btn {
+      width: 100%; background: var(--primary); color: #fff; border: 0; border-radius: 12px;
+      padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px;
+    }
+
+    /* Success Screen */
+    .success-view { text-align: center; padding: 24px 10px; display: none; }
+    .success-icon { width: 70px; height: 70px; background: var(--primary-light); color: var(--primary); border-radius: 50%; display: grid; place-items: center; margin: 0 auto 16px; }
+    .success-icon svg { width: 36px; height: 36px; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-title">
+        <div class="logo-badge">N</div>
+        <div>
+          <h1>ነጃሺ ኦንላይን ማርኬቲንግ</h1>
+          <p>Nejashi Online Shop</p>
+        </div>
+      </div>
+      <span class="verified-badge">✓ Verified Store</span>
+    </div>
+    
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="searchInput" placeholder="እቃዎችን በስም ይፈልጉ...">
+    </div>
+  </header>
+
+  <!-- Categories -->
+  <div class="categories" id="catList">
+    <button class="cat-btn active" data-cat="all">ሁሉም እቃዎች</button>
+    <button class="cat-btn" data-cat="kitchen">የወጥ ቤት</button>
+    <button class="cat-btn" data-cat="electronics">ኤሌክትሮኒክስ</button>
+    <button class="cat-btn" data-cat="home">የቤት እቃዎች</button>
+    <button class="cat-btn" data-cat="beauty">ውበትና ንጽህና</button>
+  </div>
+
+  <!-- Product Grid -->
+  <div class="container">
+    <div class="grid" id="productGrid"></div>
+  </div>
+
+  <!-- Floating Cart Bar -->
+  <div class="cart-bar hide" id="cartBar">
+    <div class="cart-info">
+      <div class="cart-count" id="cartCount">0</div>
+      <span class="cart-text">ትዕዛዝዎን ይመልከቱ</span>
+    </div>
+    <div class="cart-total" id="cartTotal">ETB 0</div>
+  </div>
+
+  <!-- Cart / Checkout Drawer -->
+  <div class="modal-overlay" id="overlay"></div>
+  <div class="drawer" id="drawer">
+    <div id="cartView">
+      <div class="drawer-header">
+        <h3 class="drawer-title">የመረጧቸው እቃዎች</h3>
+        <button class="close-btn" id="closeDrawer">&times;</button>
+      </div>
+
+      <div class="cart-items" id="cartItemsContainer"></div>
+
+      <h4 style="font-size: 14px; margin-bottom: 12px; color: var(--dark);">የማድረሻ መረጃ (Delivery Details)</h4>
+      <div class="form-group">
+        <label>ሙሉ ስም</label>
+        <input type="text" id="custName" placeholder="ስምዎን ያስገቡ">
+      </div>
+      <div class="form-group">
+        <label>ስልክ ቁጥር</label>
+        <input type="tel" id="custPhone" placeholder="09... ወይም 07...">
+      </div>
+      <div class="form-group">
+        <label>የመላኪያ አድራሻ (ከተማ / ክፍለ ከተማ)</label>
+        <input type="text" id="custAddress" placeholder="ምሳሌ፡ አዲስ አበባ፣ ቦሌ ወይም ጅማ">
+      </div>
+      <div class="form-group">
+        <label>የክፍያ ዘዴ</label>
+        <select id="custPayment">
+          <option value="telebirr">ቴሌብር (Telebirr)</option>
+          <option value="cbe">ሲቢኢ ብር / CBE Bank</option>
+          <option value="cod">እቃው ሲደርስ እከፍላለሁ (Cash on Delivery)</option>
+        </select>
+      </div>
+
+      <button class="checkout-btn" id="submitOrderBtn">ትዕዛዝ አጠናቅቅ (Order Now)</button>
+    </div>
+
+    <!-- Success View -->
+    <div class="success-view" id="successView">
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h3 style="font-size: 18px; margin-bottom: 8px;">ትዕዛዝዎ በተሳካ ሁኔታ ተልኳል!</h3>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">የነጃሺ ማርኬቲንግ ሰራተኞች በስልክዎ ደውለው እቃውን በቅርቡ ያደርሱልዎታል።</p>
+      <button class="checkout-btn" id="closeSuccessBtn">ወደ መደብሩ ተመለስ</button>
+    </div>
+  </div>
+
+  <script>
+    // ቴሌግራም WebApp ማስጀመሪያ
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.expand(); // ስክሪኑን ሙሉ እንዲሞላ
+      tg.enableClosingConfirmation();
+    }
+
+    // የነጃሺ ማርኬቲንግ እቃዎች ናሙና (Real-world products)
+    const PRODUCTS = [
+      {
+        id: 1,
+        title: "2-in-1 የኤሌክትሪክ ስጋ መፍጫ እና ብሌንደር",
+        category: "kitchen",
+        price: 2800,
+        img: "https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=400&q=80"
+      },
+      {
+        id: 2,
+        title: "የሚታጠፍ አነስተኛ የልብስ ማጠቢያ ማሽን (Portable)",
+        category: "home",
+        price: 4500,
+        img: "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=400&q=80"
+      },
+      {
+        id: 3,
+        title: "VGR ዘመናዊ ሪቻርጀብል የፀጉር መከርከሚያ",
+        category: "beauty",
+        price: 1400,
+        img: "https://images.unsplash.com/photo-1621607512214-68297480165e?w=400&q=80"
+      },
+      {
+        id: 4,
+        title: "ስማርት ሮቦት ቫኪዩም ክሊነር (Smart Robot Vacuum)",
+        category: "electronics",
+        price: 6200,
+        img: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=400&q=80"
+      },
+      {
+        id: 5,
+        title: "የአየር መጥበሻ (Digital Air Fryer 6L)",
+        category: "kitchen",
+        price: 5900,
+        img: "https://images.unsplash.com/photo-1585515320310-259814833e62?w=400&q=80"
+      },
+      {
+        id: 6,
+        title: "USB ስማርት የውሃ መሳቢያ ፓምፕ (Automatic Pump)",
+        category: "home",
+        price: 850,
+        img: "https://images.unsplash.com/photo-1548839140-29a749e1bc4e?w=400&q=80"
+      }
+    ];
+
+    let cart = {};
+    let activeCategory = 'all';
+    let searchQuery = '';
+
+    // Render Products
+    function renderProducts() {
+      const grid = document.getElementById('productGrid');
+      const filtered = PRODUCTS.filter(p => {
+        const matchCat = activeCategory === 'all' || p.category === activeCategory;
+        const matchSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchCat && matchSearch;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">ምንም የተገኘ እቃ የለም</div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(p => `
+        <div class="card">
+          <img src="${p.img}" class="card-img" alt="${p.title}">
+          <div class="card-body">
+            <span class="card-cat">${p.category}</span>
+            <div class="card-title">${p.title}</div>
+            <div class="card-footer">
+              <span class="price">${p.price.toLocaleString()} ብር</span>
+              <button class="add-btn" onclick="addToCart(${p.id})">+</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Cart Management
+    window.addToCart = function(id) {
+      cart[id] = (cart[id] || 0) + 1;
+      if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+      updateCartUI();
+    };
+
+    window.changeQty = function(id, delta) {
+      if (!cart[id]) return;
+      cart[id] += delta;
+      if (cart[id] <= 0) delete cart[id];
+      if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+      updateCartUI();
+      renderCartDrawer();
+    };
+
+    function updateCartUI() {
+      const count = Object.values(cart).reduce((a, b) => a + b, 0);
+      const total = Object.entries(cart).reduce((sum, [id, qty]) => {
+        const p = PRODUCTS.find(x => x.id === +id);
+        return sum + (p.price * qty);
+      }, 0);
+
+      const cartBar = document.getElementById('cartBar');
+      if (count > 0) {
+        cartBar.classList.remove('hide');
+        document.getElementById('cartCount').textContent = count;
+        document.getElementById('cartTotal').textContent = `ETB ${total.toLocaleString()}`;
+      } else {
+        cartBar.classList.add('hide');
+      }
+    }
+
+    function renderCartDrawer() {
+      const container = document.getElementById('cartItemsContainer');
+      const items = Object.entries(cart);
+      if (items.length === 0) {
+        closeDrawerModal();
+        return;
+      }
+
+      container.innerHTML = items.map(([id, qty]) => {
+        const p = PRODUCTS.find(x => x.id === +id);
+        return `
+          <div class="cart-item">
+            <div class="item-meta">
+              <h4>${p.title}</h4>
+              <p>${(p.price * qty).toLocaleString()} ብር (${p.price} x ${qty})</p>
+            </div>
+            <div class="qty-ctl">
+              <button class="qty-btn" onclick="changeQty(${p.id}, -1)">-</button>
+              <span style="font-weight:700; font-size:14px;">${qty}</span>
+              <button class="qty-btn" onclick="changeQty(${p.id}, 1)">+</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Drawer Open/Close
+    const overlay = document.getElementById('overlay');
+    const drawer = document.getElementById('drawer');
+
+    document.getElementById('cartBar').onclick = () => {
+      renderCartDrawer();
+      overlay.classList.add('open');
+      drawer.classList.add('open');
+    };
+
+    function closeDrawerModal() {
+      overlay.classList.remove('open');
+      drawer.classList.remove('open');
+      setTimeout(() => {
+        document.getElementById('cartView').style.display = 'block';
+        document.getElementById('successView').style.display = 'none';
+      }, 300);
+    }
+
+    document.getElementById('closeDrawer').onclick = closeDrawerModal;
+    overlay.onclick = closeDrawerModal;
+    document.getElementById('closeSuccessBtn').onclick = closeDrawerModal;
+
+    // Filter Buttons
+    document.querySelectorAll('.cat-btn').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeCategory = btn.dataset.cat;
+        renderProducts();
+      };
+    });
+
+    // Search
+    document.getElementById('searchInput').oninput = (e) => {
+      searchQuery = e.target.value;
+      renderProducts();
+    };
+
+    // Submit Order
+    document.getElementById('submitOrderBtn').onclick = () => {
+      const name = document.getElementById('custName').value.trim();
+      const phone = document.getElementById('custPhone').value.trim();
+      const addr = document.getElementById('custAddress').value.trim();
+      const pay = document.getElementById('custPayment').value;
+
+      if (!name || !phone || !addr) {
+        alert('እባክዎ ስም፣ ስልክ እና አድራሻ በትክክል ያስገቡ!');
+        return;
+      }
+
+      // ትዕዛዝ ዝግጅት
+      const orderData = {
+        name, phone, address: addr, payment: pay,
+        items: Object.entries(cart).map(([id, qty]) => {
+          const p = PRODUCTS.find(x => x.id === +id);
+          return `${p.title} (x${qty})`;
+        })
+      };
+
+      // ቴሌግራም ቦት ላይ ከሆነ ዳታውን ለቦቱ መላክ
+      if (tg && tg.sendData) {
+        tg.sendData(JSON.stringify(orderData));
+      }
+
+      // የድል ስክሪን ማሳየት
+      document.getElementById('cartView').style.display = 'none';
+      document.getElementById('successView').style.display = 'block';
+      cart = {};
+      updateCartUI();
+    };
+
+    // Initial Load
+    renderProducts();
+  </script>
+</body>
+</html>
