@@ -360,7 +360,7 @@
         </div>
         <div class="field" id="f-addr">
           <label for="custAddress">የመላኪያ አድራሻ (ከተማ / ክፍለ ከተማ)</label>
-          <input type="text" id="custAddress" placeholder="ምሳሌ፡ አዲስ አበባ፣ ቦሌ" autocomplete="street-address">
+          <input type="text" id="custAddress" placeholder="ምሳሌ፡ አዲስ አበባ፣ ቦሌ ወይም ጅማ" autocomplete="street-address">
           <div class="err">እባክዎ የመላኪያ አድራሻ ያስገቡ</div>
         </div>
 
@@ -489,7 +489,7 @@
     function renderCats() {
       const items = [
         { key: 'all', html: 'ሁሉም እቃዎች' },
-        { key: 'fav', html: `<span class="heart-dot">♥</span> የምወዳቸው${favs.size ? ' (' + favs.size + ')' : ''}` },
+        { key: 'fav', html: `<span class="heart-dot">♥</span> የወደድኳቸው${favs.size ? ' (' + favs.size + ')' : ''}` },
         ...Object.entries(CATS).map(([key, c]) => ({ key, html: `${c.icon} ${c.label}` }))
       ];
       $('#catList').innerHTML = items.map(i =>
@@ -531,7 +531,7 @@
       if (!list.length) {
         const isFav = activeCategory === 'fav' && !searchQuery.trim();
         grid.innerHTML = `<div class="empty">
-          <strong>${isFav ? 'ገና የምወዳቸው እቃ የሉም' : 'ምንም የተገኘ እቃ የለም'}</strong>
+          <strong>${isFav ? 'ገና የወደድኳቸው እቃ የሉም' : 'ምንም የተገኘ እቃ የለም'}</strong>
           <p>${isFav ? 'በእቃው ላይ ያለውን ልብ ♥ ምልክት ይንኩ' : 'በሌላ ቃል ይሞክሩ ወይም ሁሉንም እቃዎች ይመልከቱ'}</p>
           <button type="button" class="ghost-btn" data-action="show-all">ሁሉንም እቃዎች አሳይ</button>
         </div>`;
@@ -542,7 +542,7 @@
         <article class="card" data-card="${p.id}">
           <div class="card-media">
             <img src="${esc(p.img)}" alt="${esc(p.title)}" loading="lazy" decoding="async">
-            <button type="button" class="fav${favs.has(p.id) ? ' on' : ''}" data-action="fav" data-id="${p.id}" aria-pressed="${favs.has(p.id)}" aria-label="ወደ ምወዳቸው ጨምር">${HEART}</button>
+            <button type="button" class="fav${favs.has(p.id) ? ' on' : ''}" data-action="fav" data-id="${p.id}" aria-pressed="${favs.has(p.id)}" aria-label="ወደድኩት">${HEART}</button>
           </div>
           <div class="card-body">
             <span class="card-cat">${esc(CATS[p.category]?.label || p.category)}</span>
@@ -723,7 +723,7 @@
 
     /* ═══════════ Checkout form ═══════════ */
     const saved = store.get('nj_customer', {});
-    $('#custName').value = saved.name || [tgUser?.first_name, tgUser?.last_name].filter(Boolean).join(' ');
+    $('#custName').value = saved.name || '';
     $('#custPhone').value = saved.phone || '';
     $('#custAddress').value = saved.address || '';
     if (saved.payment) {
