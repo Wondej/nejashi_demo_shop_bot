@@ -2,462 +2,793 @@
 <html lang="am">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0E1127">
   <title>Nejashi Online Marketing - Mini App</title>
   <!-- Telegram Web App Script -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <!-- Google Fonts -->
+  <!-- Main font = your AbyssinicaSIL-Regular.ttf (see @font-face). Noto Sans Ethiopic is only a backup. -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@400;600&display=swap" rel="stylesheet">
 
   <style>
+    /* Your font file: put AbyssinicaSIL-Regular.ttf in the same folder as index.html */
+    @font-face {
+      font-family: 'AbyssinicaSIL';
+      src: local('Abyssinica SIL'), local('AbyssinicaSIL-Regular'), url('AbyssinicaSIL-Regular.ttf') format('truetype');
+      font-weight: 400; font-style: normal; font-display: swap;
+    }
+
     :root {
-      --primary: #0F5132;        /* የነጃሺ ኤመራልድ አረንጓዴ */
-      --primary-light: #E8F5E9;
-      --accent: #E5A93C;         /* ወርቃማ ቀለም */
-      --dark: #121816;
-      --card-bg: #FFFFFF;
-      --bg: #F4F6F5;
-      --text-muted: #6C7A74;
-      --border: #E2E8E5;
-      --radius: 16px;
-      --font: 'Plus Jakarta Sans', system-ui, sans-serif;
+      color-scheme: dark;
+      --bg: #0E1127;
+      --s1: #171B38;
+      --s2: #20254A;
+      --line: rgba(255, 255, 255, .08);
+      --ink: #F4F5FB;
+      --muted: #9CA3C9;
+      --a1: #6D4AFF;
+      --a2: #3F6DF6;
+      --grad: linear-gradient(135deg, #6D4AFF 0%, #3F6DF6 100%);
+      --tint: rgba(124, 92, 255, .16);
+      --pink: #FF6B8E;
+      --ok: #2DD4A0;
+      --font: 'AbyssinicaSIL', 'Noto Sans Ethiopic', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      --safe-b: env(safe-area-inset-bottom, 0px);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); -webkit-tap-highlight-color: transparent; }
-    body { background: var(--bg); color: var(--dark); padding-bottom: 90px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html { -webkit-text-size-adjust: 100%; background: var(--bg); }
+    body {
+      font-family: var(--font); font-synthesis: none; background: var(--bg); color: var(--ink); line-height: 1.5;
+      padding-bottom: calc(120px + var(--safe-b)); -webkit-font-smoothing: antialiased;
+    }
+    body.lock { overflow: hidden; }
+    button, input, select { font: inherit; color: inherit; }
+    button { cursor: pointer; border: 0; background: none; }
+    ::placeholder { color: #7B82AB; opacity: 1; }
+    :focus-visible { outline: 2px solid #A794FF; outline-offset: 2px; }
+    .is-hidden { display: none !important; }
 
-    /* Header */
-    header {
-      background: var(--card-bg);
-      padding: 16px 20px 12px;
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      border-bottom: 1px solid var(--border);
+    /* ───────── Logo slot ─────────
+       Put your logo next to index.html as logo.png
+       or change CONFIG.LOGO_URL in the script. */
+    .logo {
+      --s: 44px; width: var(--s); height: var(--s); flex: none; border-radius: 13px; background: #fff;
+      display: grid; place-items: center; overflow: hidden; color: #1B1F3B; font-size: calc(var(--s) * .5);
     }
-    .brand { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-    .brand-title { display: flex; align-items: center; gap: 10px; }
-    .logo-badge {
-      width: 40px; height: 40px; border-radius: 12px; background: var(--primary);
-      display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 18px;
-    }
-    .brand h1 { font-size: 17px; font-weight: 700; color: var(--dark); line-height: 1.2; }
-    .brand p { font-size: 12px; color: var(--text-muted); }
-    .verified-badge {
-      background: var(--primary-light); color: var(--primary); font-size: 11px;
-      font-weight: 600; padding: 4px 8px; border-radius: 99px;
-    }
+    .logo img { width: 100%; height: 100%; object-fit: contain; padding: calc(var(--s) * .1); }
 
-    /* Search */
-    .search-box { position: relative; }
+    /* ───────── Header ───────── */
+    .top { padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 20px; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-text { flex: 1; min-width: 0; }
+    .brand h1 { font-size: 16px; line-height: 1.35; }
+    .brand p { font-size: 12px; color: var(--muted); }
+    .verified { flex: none; display: inline-flex; align-items: center; gap: 5px; font-size: 12px; padding: 5px 10px 5px 8px; border-radius: 99px; color: var(--ok); background: rgba(45, 212, 160, .12); }
+    .verified svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+
+    .hero { position: relative; overflow: hidden; margin-top: 18px; padding: 22px 20px 18px; border-radius: 28px; background: var(--grad); color: #fff; box-shadow: 0 18px 40px rgba(79, 70, 229, .35); }
+    .hero::before, .hero::after { content: ""; position: absolute; border-radius: 50%; pointer-events: none; }
+    .hero::before { width: 190px; height: 190px; right: -60px; top: -70px; background: rgba(255, 255, 255, .12); }
+    .hero::after { width: 110px; height: 110px; right: 40px; bottom: -60px; background: rgba(255, 255, 255, .09); }
+    .hero h2 { position: relative; font-size: 28px; line-height: 1.3; font-weight: 400; letter-spacing: -.01em; }
+    .hero p { position: relative; font-size: 15px; color: rgba(255, 255, 255, .82); margin-top: 2px; }
+    .steps { position: relative; list-style: none; display: flex; gap: 8px; margin-top: 18px; }
+    .steps li { flex: 1; display: flex; align-items: flex-start; gap: 7px; padding: 9px 10px; border-radius: 14px; background: rgba(255, 255, 255, .16); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); font-size: 12px; line-height: 1.4; }
+    .steps b { flex: none; width: 18px; height: 18px; border-radius: 50%; background: #fff; color: var(--a1); display: grid; place-items: center; font-size: 10.5px; font-weight: 400; }
+
+    /* ───────── Sticky search + categories ───────── */
+    .sticky-bar { position: sticky; top: 0; z-index: 50; background: rgba(14, 17, 39, .88); -webkit-backdrop-filter: saturate(160%) blur(16px); backdrop-filter: saturate(160%) blur(16px); border-bottom: 1px solid var(--line); padding-top: 12px; }
+    .search-box { position: relative; margin: 0 16px; }
+    .search-box > svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--muted); pointer-events: none; }
     .search-box input {
-      width: 100%; padding: 12px 14px 12px 40px; border: 1px solid var(--border);
-      background: var(--bg); border-radius: 12px; font-size: 14px; outline: none; transition: 0.2s;
+      width: 100%; height: 48px; padding: 0 42px; border: 1.5px solid transparent; background: var(--s2);
+      border-radius: 16px; font-size: 16px; outline: none; transition: border-color .2s, background .2s; -webkit-appearance: none; appearance: none;
     }
-    .search-box input:focus { border-color: var(--primary); background: #fff; }
-    .search-box svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 18px; color: var(--text-muted); }
-
-    /* Categories */
-    .categories {
-      display: flex; gap: 8px; overflow-x: auto; padding: 12px 20px;
-      scrollbar-width: none; -ms-overflow-style: none;
-    }
+    .search-box input::-webkit-search-cancel-button { display: none; }
+    .search-box input:focus { border-color: #8B76FF; background: var(--s1); }
+    .search-clear { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; border-radius: 50%; color: var(--muted); font-size: 20px; line-height: 1; }
+    .categories { display: flex; gap: 8px; overflow-x: auto; padding: 10px 16px 12px; scrollbar-width: none; }
     .categories::-webkit-scrollbar { display: none; }
-    .cat-btn {
-      white-space: nowrap; padding: 8px 16px; border-radius: 99px; font-size: 13px; font-weight: 600;
-      background: var(--card-bg); border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; transition: 0.2s;
-    }
-    .cat-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .cat-btn { flex: none; white-space: nowrap; height: 38px; padding: 0 16px; border-radius: 99px; font-size: 14px; background: var(--s1); border: 1px solid var(--line); color: var(--muted); transition: background .2s, color .2s, border-color .2s; }
+    .cat-btn.active { background: var(--grad); color: #fff; border-color: transparent; box-shadow: 0 6px 16px rgba(79, 70, 229, .35); }
+    .cat-btn .heart-dot { color: var(--pink); }
+    .cat-btn.active .heart-dot { color: #fff; }
 
-    /* Product Grid */
-    .container { padding: 0 20px; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px; }
-    .card {
-      background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border);
-      overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; transition: 0.2s;
+    /* ───────── Toolbar ───────── */
+    .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 18px 16px 10px; }
+    .toolbar .count { font-size: 13px; color: var(--muted); }
+    .sort { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+    .sort select {
+      height: 36px; padding: 0 30px 0 12px; border: 1px solid var(--line); border-radius: 11px; background-color: var(--s1); font-size: 13px; color: var(--ink);
+      appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239CA3C9' stroke-width='3'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 10px center;
     }
-    .card:active { transform: scale(0.98); }
-    .card-img { width: 100%; aspect-ratio: 1/1; object-fit: cover; background: #eee; }
-    .card-body { padding: 12px; display: flex; flex-direction: column; gap: 6px; flex-grow: 1; }
-    .card-cat { font-size: 11px; color: var(--accent); font-weight: 700; text-transform: uppercase; }
-    .card-title { font-size: 13px; font-weight: 600; line-height: 1.35; color: var(--dark); height: 36px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-    .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); }
-    .price { font-size: 15px; font-weight: 800; color: var(--primary); }
-    .add-btn {
-      width: 34px; height: 34px; border-radius: 10px; background: var(--primary-light);
-      border: 0; color: var(--primary); display: grid; place-items: center; cursor: pointer; font-size: 18px; font-weight: bold;
-    }
+    .sort select option { background: #1B1F3D; color: #F4F5FB; }
 
-    /* Bottom Floating Cart Bar */
+    /* ───────── Product grid ───────── */
+    .container { padding: 0 16px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .card { background: var(--s1); border: 1px solid var(--line); border-radius: 24px; padding: 8px; display: flex; flex-direction: column; transition: transform .15s, border-color .2s; }
+    .card:active { transform: scale(.985); }
+    .card-media {
+      position: relative; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 17px;
+      background: linear-gradient(100deg, #22274D 30%, #2C3260 50%, #22274D 70%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite;
+    }
+    .card-media.loaded { animation: none; background: #22274D; }
+    .card-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .fav {
+      position: absolute; top: 8px; right: 8px; width: 34px; height: 34px; border-radius: 50%; background: rgba(14, 17, 39, .55);
+      -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); display: grid; place-items: center; color: #fff;
+    }
+    .fav::after { content: ""; position: absolute; inset: -6px; }
+    .fav svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform .2s; }
+    .fav.on { color: var(--pink); }
+    .fav.on svg { fill: currentColor; transform: scale(1.1); }
+    .card-body { padding: 11px 6px 4px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
+    .card-cat { font-size: 12px; color: #A794FF; }
+    .card-title { font-size: 14px; line-height: 1.45; min-height: calc(1.45em * 2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .card-foot { margin-top: auto; padding-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+    .price { font-size: 20px; line-height: 1.2; letter-spacing: -.01em; }
+    .price small { font-size: 12px; color: var(--muted); margin-left: 3px; letter-spacing: 0; }
+    .add-btn { width: 100%; height: 42px; border-radius: 13px; background: var(--tint); color: #CFC5FF; font-size: 14px; transition: background .15s; }
+    .add-btn:active { background: rgba(124, 92, 255, .3); }
+    .stepper { display: grid; grid-template-columns: 42px 1fr 42px; align-items: center; height: 42px; border-radius: 13px; background: var(--grad); color: #fff; overflow: hidden; }
+    .stepper button { height: 100%; font-size: 20px; color: #fff; }
+    .stepper button:active { background: rgba(255, 255, 255, .18); }
+    .stepper span { text-align: center; font-size: 15px; }
+
+    .empty { grid-column: 1 / -1; text-align: center; padding: 56px 20px; color: var(--muted); }
+    .empty strong { display: block; font-weight: 400; color: var(--ink); font-size: 17px; margin-bottom: 4px; }
+    .empty p { font-size: 13.5px; margin-bottom: 16px; }
+    .empty .ghost-btn { height: 42px; padding: 0 20px; border-radius: 99px; border: 1px solid #8B76FF; color: #CFC5FF; font-size: 14px; }
+
+    /* ───────── Page footer / help ───────── */
+    .foot { margin: 34px 16px 0; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+    .foot p { font-size: 13px; color: var(--muted); }
+    .contact-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    .contact-btn { display: inline-flex; align-items: center; gap: 6px; height: 42px; padding: 0 18px; border-radius: 99px; background: var(--s1); border: 1px solid var(--line); color: var(--ink); font-size: 14px; text-decoration: none; }
+
+    /* ───────── Floating cart bar ───────── */
     .cart-bar {
-      position: fixed; bottom: 16px; left: 20px; right: 20px;
-      background: var(--primary); color: #fff; border-radius: 16px;
-      padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;
-      box-shadow: 0 10px 25px rgba(15, 81, 50, 0.35); z-index: 100; cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: fixed; left: 16px; right: 16px; bottom: calc(14px + var(--safe-b)); z-index: 100; width: auto;
+      background: var(--grad); color: #fff; border-radius: 22px; padding: 10px 18px 10px 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      box-shadow: 0 16px 36px rgba(79, 70, 229, .45); text-align: left;
+      transition: transform .35s cubic-bezier(.16, 1, .3, 1), opacity .3s;
     }
-    .cart-bar.hide { transform: translateY(120%); opacity: 0; pointer-events: none; }
+    .cart-bar.hide { transform: translateY(150%); opacity: 0; pointer-events: none; }
+    .cart-bar.bump { animation: bump .35s ease; }
     .cart-info { display: flex; align-items: center; gap: 12px; }
-    .cart-count { background: var(--accent); color: #1a1a1a; font-weight: 800; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; }
-    .cart-text { font-size: 14px; font-weight: 600; }
-    .cart-total { font-size: 16px; font-weight: 800; }
+    .cart-count { background: #fff; color: #3A2BB5; min-width: 36px; height: 36px; padding: 0 8px; border-radius: 12px; display: grid; place-items: center; font-size: 15px; }
+    .cart-text { font-size: 15px; }
+    .cart-total { font-size: 16px; white-space: nowrap; }
 
-    /* Modal / Drawer */
-    .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 120;
-      opacity: 0; pointer-events: none; transition: 0.3s;
-    }
-    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+    /* ───────── Drawer ───────── */
+    .overlay { position: fixed; inset: 0; background: rgba(5, 7, 20, .7); z-index: 120; opacity: 0; pointer-events: none; transition: opacity .25s; }
+    .overlay.open { opacity: 1; pointer-events: auto; }
     .drawer {
-      position: fixed; bottom: 0; left: 0; right: 0; background: #fff;
-      border-radius: 24px 24px 0 0; padding: 24px 20px; z-index: 130;
-      transform: translateY(100%); transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      max-height: 85vh; overflow-y: auto;
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 130; background: var(--s1); border-top: 1px solid var(--line); border-radius: 28px 28px 0 0;
+      max-height: 92vh; max-height: 92dvh; display: flex; flex-direction: column; overflow: hidden;
+      transform: translateY(105%); visibility: hidden; transition: transform .32s cubic-bezier(.16, 1, .3, 1), visibility 0s .32s;
     }
-    .drawer.open { transform: translateY(0); }
-    .drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .drawer-title { font-size: 18px; font-weight: 700; }
-    .close-btn { background: none; border: 0; font-size: 24px; color: var(--text-muted); cursor: pointer; }
+    .drawer.open { transform: none; visibility: visible; transition: transform .32s cubic-bezier(.16, 1, .3, 1), visibility 0s; }
+    .grab { width: 40px; height: 4px; border-radius: 4px; background: rgba(255, 255, 255, .18); margin: 10px auto 0; flex: none; }
+    .drawer-view { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+    .drawer-head { display: flex; align-items: center; gap: 10px; padding: 14px 20px 10px; }
+    .drawer-head h3 { flex: 1; font-size: 20px; font-weight: 400; }
+    .drawer-head h3 small { font-size: 13px; color: var(--muted); margin-left: 6px; }
+    .link-danger { font-size: 13px; color: var(--pink); padding: 6px 4px; }
+    .close-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--s2); font-size: 22px; line-height: 1; color: var(--muted); }
+    .drawer-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 20px 18px; }
 
-    /* Cart Items in Drawer */
-    .cart-items { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
-    .cart-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
-    .item-meta h4 { font-size: 13px; font-weight: 600; }
-    .item-meta p { font-size: 12px; color: var(--primary); font-weight: 700; margin-top: 2px; }
-    .qty-ctl { display: flex; align-items: center; gap: 10px; }
-    .qty-btn { width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); font-weight: bold; cursor: pointer; }
+    .cart-items { display: flex; flex-direction: column; margin-bottom: 24px; }
+    .cart-item { display: grid; grid-template-columns: 60px 1fr auto; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); }
+    .cart-item img { width: 60px; height: 60px; border-radius: 15px; object-fit: cover; background: var(--s2); }
+    .item-meta h4 { font-size: 14px; font-weight: 400; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .item-meta .unit { font-size: 12px; color: var(--muted); }
+    .item-meta .line { font-size: 15px; margin-top: 2px; color: #CFC5FF; }
+    .mini-step { display: inline-flex; align-items: center; border-radius: 12px; background: var(--s2); overflow: hidden; }
+    .mini-step button { width: 32px; height: 36px; font-size: 18px; display: grid; place-items: center; }
+    .mini-step button.danger { color: var(--pink); }
+    .mini-step button svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .mini-step span { min-width: 22px; text-align: center; font-size: 14px; }
 
-    /* Form Fields */
-    .form-group { margin-bottom: 14px; }
-    .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
-    .form-group input, .form-group select {
-      width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; outline: none; background: var(--bg);
+    .section-title { font-size: 16px; font-weight: 400; margin-bottom: 12px; }
+    .section-title small { color: var(--muted); font-size: 13px; margin-left: 4px; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .field input[type=text], .field input[type=tel] {
+      width: 100%; height: 52px; padding: 0 16px; border: 1.5px solid transparent; border-radius: 15px; font-size: 16px; outline: none; background: var(--s2); transition: border-color .2s, background .2s;
     }
-    .form-group input:focus, .form-group select:focus { border-color: var(--primary); background: #fff; }
-    .checkout-btn {
-      width: 100%; background: var(--primary); color: #fff; border: 0; border-radius: 12px;
-      padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px;
+    .field input:focus { border-color: #8B76FF; background: #1B1F40; }
+    .field.invalid input { border-color: var(--pink); background: rgba(255, 107, 142, .08); }
+    .field .err { display: none; color: var(--pink); font-size: 12.5px; margin-top: 5px; }
+    .field.invalid .err { display: block; }
+
+    .pay-list { display: flex; flex-direction: column; gap: 8px; }
+    .pay { position: relative; display: flex; align-items: center; gap: 12px; padding: 13px 14px; border: 1.5px solid var(--line); border-radius: 15px; background: var(--s2); cursor: pointer; transition: border-color .2s, background .2s; }
+    .pay input { position: absolute; opacity: 0; pointer-events: none; }
+    .pay .ico { font-size: 20px; width: 28px; text-align: center; }
+    .pay .txt { flex: 1; line-height: 1.35; }
+    .pay .txt b { display: block; font-size: 14px; font-weight: 400; }
+    .pay .txt span { font-size: 12px; color: var(--muted); }
+    .pay .dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #5A6194; display: grid; place-items: center; transition: border-color .2s; }
+    .pay .dot::after { content: ""; width: 10px; height: 10px; border-radius: 50%; background: #A794FF; transform: scale(0); transition: transform .18s; }
+    .pay:has(input:checked) { border-color: #8B76FF; background: var(--tint); }
+    .pay:has(input:checked) .dot { border-color: #A794FF; }
+    .pay:has(input:checked) .dot::after { transform: scale(1); }
+    .pay:has(input:focus-visible) { outline: 2px solid #A794FF; outline-offset: 2px; }
+
+    .drawer-foot { flex: none; display: flex; align-items: center; gap: 16px; padding: 14px 20px calc(14px + var(--safe-b)); border-top: 1px solid var(--line); background: var(--s1); }
+    .foot-total small { display: block; font-size: 12px; color: var(--muted); line-height: 1.2; }
+    .foot-total strong { font-size: 22px; font-weight: 400; white-space: nowrap; letter-spacing: -.01em; }
+    .primary-btn { flex: 1; height: 54px; border-radius: 17px; background: var(--grad); color: #fff; font-size: 16px; box-shadow: 0 10px 24px rgba(79, 70, 229, .35); transition: transform .12s; }
+    .primary-btn:active { transform: scale(.98); }
+
+    /* ───────── Success ───────── */
+    .success { text-align: center; padding: 28px 24px calc(24px + var(--safe-b)); overflow-y: auto; }
+    .success-icon { width: 76px; height: 76px; border-radius: 50%; background: var(--ok); color: #06251D; display: grid; place-items: center; margin: 8px auto 18px; animation: pop .45s cubic-bezier(.16, 1, .3, 1); box-shadow: 0 0 0 10px rgba(45, 212, 160, .14); }
+    .success-icon svg { width: 38px; height: 38px; }
+    .success-icon path { stroke-dasharray: 26; stroke-dashoffset: 26; animation: draw .4s .2s ease forwards; }
+    .success h3 { font-size: 21px; font-weight: 400; margin-bottom: 12px; line-height: 1.4; }
+    .order-id { display: inline-block; padding: 7px 14px; border-radius: 99px; background: var(--s2); font-size: 13.5px; margin-bottom: 14px; }
+    .success p { font-size: 14px; color: var(--muted); margin-bottom: 20px; }
+    .success .contact-row { margin-bottom: 14px; }
+    .success .primary-btn { width: 100%; flex: none; }
+
+    /* ───────── Toast ───────── */
+    .toast {
+      position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); left: 50%; z-index: 200; max-width: calc(100% - 32px); padding: 12px 18px; border-radius: 14px; background: #fff; color: #14172E;
+      font-size: 13.5px; text-align: center; transform: translate(-50%, -140%); transition: transform .3s cubic-bezier(.16, 1, .3, 1); box-shadow: 0 10px 30px rgba(0, 0, 0, .4);
+    }
+    .toast.show { transform: translate(-50%, 0); }
+
+    @keyframes shimmer { to { background-position: -200% 0; } }
+    @keyframes bump { 40% { transform: scale(1.035); } }
+    @keyframes pop { from { transform: scale(.5); opacity: 0; } }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+    @media (min-width: 520px) {
+      body { max-width: 520px; margin: 0 auto; box-shadow: 0 0 0 1px var(--line); }
+      .drawer, .cart-bar { left: 50%; right: auto; width: 520px; }
+      .drawer { transform: translate(-50%, 105%); }
+      .drawer.open { transform: translateX(-50%); }
+      .cart-bar { width: 488px; transform: translateX(-50%); }
+      .cart-bar.hide { transform: translate(-50%, 150%); }
     }
 
-    /* Success Screen */
-    .success-view { text-align: center; padding: 24px 10px; display: none; }
-    .success-icon { width: 70px; height: 70px; background: var(--primary-light); color: var(--primary); border-radius: 50%; display: grid; place-items: center; margin: 0 auto 16px; }
-    .success-icon svg { width: 36px; height: 36px; }
   </style>
 </head>
 <body>
 
   <!-- Header -->
-  <header>
+  <header class="top">
     <div class="brand">
-      <div class="brand-title">
-        <div class="logo-badge">N</div>
-        <div>
-          <h1>ነጃሺ ኦንላይን ማርኬቲንግ</h1>
-          <p>Nejashi Online Shop</p>
-        </div>
+      <!-- 👇 LOGO HERE: the logo loads into this box (falls back to "N" if no logo is found) -->
+      <div class="logo" data-logo></div>
+      <div class="brand-text">
+        <h1>ነጃሺ ኦንላይን ማርኬቲንግ</h1>
+        <p>Nejashi Online Shop</p>
       </div>
-      <span class="verified-badge">✓ Verified Store</span>
+      <span class="verified"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Verified</span>
     </div>
-    
-    <div class="search-box">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-      <input type="text" id="searchInput" placeholder="እቃዎችን በስም ይፈልጉ...">
-    </div>
+
+    <section class="hero">
+      <h2 id="greeting">እንኳን ደህና መጡ!</h2>
+      <p>ዛሬ ምን ያስፈልግዎታል?</p>
+      <ol class="steps">
+        <li><b>1</b>እቃ ይምረጡ</li>
+        <li><b>2</b>ትዕዛዝ ይላኩ</li>
+        <li><b>3</b>ደውለን እናደርሳለን</li>
+      </ol>
+    </section>
   </header>
 
-  <!-- Categories -->
-  <div class="categories" id="catList">
-    <button class="cat-btn active" data-cat="all">ሁሉም እቃዎች</button>
-    <button class="cat-btn" data-cat="kitchen">የወጥ ቤት</button>
-    <button class="cat-btn" data-cat="electronics">ኤሌክትሮኒክስ</button>
-    <button class="cat-btn" data-cat="home">የቤት እቃዎች</button>
-    <button class="cat-btn" data-cat="beauty">ውበትና ንጽህና</button>
+  <!-- Search + Categories (stays visible while scrolling) -->
+  <div class="sticky-bar">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="search" id="searchInput" placeholder="እቃዎችን በስም ይፈልጉ..." aria-label="እቃዎችን ይፈልጉ" autocomplete="off">
+      <button type="button" class="search-clear is-hidden" id="searchClear" aria-label="ፍለጋውን አጽዳ">&times;</button>
+    </div>
+    <div class="categories" id="catList" role="tablist" aria-label="ምድቦች"></div>
+  </div>
+
+  <div class="toolbar">
+    <span class="count" id="resultCount" aria-live="polite"></span>
+    <label class="sort">ደርድር
+      <select id="sortSel">
+        <option value="default">ነባሪ</option>
+        <option value="asc">ዋጋ ↑ ከዝቅተኛ</option>
+        <option value="desc">ዋጋ ↓ ከከፍተኛ</option>
+      </select>
+    </label>
   </div>
 
   <!-- Product Grid -->
-  <div class="container">
+  <main class="container">
     <div class="grid" id="productGrid"></div>
-  </div>
+  </main>
+
+  <footer class="foot">
+    <div class="logo" data-logo style="--s:36px"></div>
+    <p>ነጃሺ ኦንላይን ማርኬቲንግ</p>
+    <div class="contact-row" id="helpRow"></div>
+  </footer>
 
   <!-- Floating Cart Bar -->
-  <div class="cart-bar hide" id="cartBar">
-    <div class="cart-info">
-      <div class="cart-count" id="cartCount">0</div>
+  <button type="button" class="cart-bar hide" id="cartBar" aria-label="ትዕዛዝዎን ይመልከቱ">
+    <span class="cart-info">
+      <span class="cart-count" id="cartCount">0</span>
       <span class="cart-text">ትዕዛዝዎን ይመልከቱ</span>
-    </div>
-    <div class="cart-total" id="cartTotal">ETB 0</div>
-  </div>
+    </span>
+    <span class="cart-total" id="cartTotal">ETB 0</span>
+  </button>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <!-- Cart / Checkout Drawer -->
-  <div class="modal-overlay" id="overlay"></div>
-  <div class="drawer" id="drawer">
-    <div id="cartView">
-      <div class="drawer-header">
-        <h3 class="drawer-title">የመረጧቸው እቃዎች</h3>
-        <button class="close-btn" id="closeDrawer">&times;</button>
+  <div class="overlay" id="overlay"></div>
+  <div class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+    <div class="grab"></div>
+
+    <div class="drawer-view" id="cartView">
+      <div class="drawer-head">
+        <h3 class="drawer-title" id="drawerTitle">የመረጧቸው እቃዎች<small id="drawerCount"></small></h3>
+        <button type="button" class="link-danger" id="clearCart">ሁሉንም አጥፋ</button>
+        <button type="button" class="close-btn" id="closeDrawer" aria-label="ዝጋ">&times;</button>
       </div>
 
-      <div class="cart-items" id="cartItemsContainer"></div>
+      <div class="drawer-body">
+        <div class="cart-items" id="cartItemsContainer"></div>
 
-      <h4 style="font-size: 14px; margin-bottom: 12px; color: var(--dark);">የማድረሻ መረጃ (Delivery Details)</h4>
-      <div class="form-group">
-        <label>ሙሉ ስም</label>
-        <input type="text" id="custName" placeholder="ስምዎን ያስገቡ">
-      </div>
-      <div class="form-group">
-        <label>ስልክ ቁጥር</label>
-        <input type="tel" id="custPhone" placeholder="09... ወይም 07...">
-      </div>
-      <div class="form-group">
-        <label>የመላኪያ አድራሻ (ከተማ / ክፍለ ከተማ)</label>
-        <input type="text" id="custAddress" placeholder="ምሳሌ፡ አዲስ አበባ፣ ቦሌ ወይም ጅማ">
-      </div>
-      <div class="form-group">
-        <label>የክፍያ ዘዴ</label>
-        <select id="custPayment">
-          <option value="telebirr">ቴሌብር (Telebirr)</option>
-          <option value="cbe">ሲቢኢ ብር / CBE Bank</option>
-          <option value="cod">እቃው ሲደርስ እከፍላለሁ (Cash on Delivery)</option>
-        </select>
+        <h4 class="section-title">የማድረሻ መረጃ <small>(Delivery Details)</small></h4>
+        <div class="field" id="f-name">
+          <label for="custName">ሙሉ ስም</label>
+          <input type="text" id="custName" placeholder="ስምዎን ያስገቡ" autocomplete="name">
+          <div class="err">እባክዎ ሙሉ ስምዎን ያስገቡ</div>
+        </div>
+        <div class="field" id="f-phone">
+          <label for="custPhone">ስልክ ቁጥር</label>
+          <input type="tel" id="custPhone" placeholder="09... ወይም 07..." inputmode="tel" autocomplete="tel">
+          <div class="err">ትክክለኛ ስልክ ቁጥር ያስገቡ (ምሳሌ፡ 0911223344)</div>
+        </div>
+        <div class="field" id="f-addr">
+          <label for="custAddress">የመላኪያ አድራሻ (ከተማ / ክፍለ ከተማ)</label>
+          <input type="text" id="custAddress" placeholder="ምሳሌ፡ አዲስ አበባ፣ ቦሌ" autocomplete="street-address">
+          <div class="err">እባክዎ የመላኪያ አድራሻ ያስገቡ</div>
+        </div>
+
+        <h4 class="section-title" style="margin-top:20px;">የክፍያ ዘዴ</h4>
+        <div class="pay-list" role="radiogroup" aria-label="የክፍያ ዘዴ">
+          <label class="pay">
+            <input type="radio" name="custPayment" value="telebirr" checked>
+            <span class="ico">📱</span>
+            <span class="txt"><b>ቴሌብር</b><span>Telebirr</span></span>
+            <span class="dot"></span>
+          </label>
+          <label class="pay">
+            <input type="radio" name="custPayment" value="cbe">
+            <span class="ico">🏦</span>
+            <span class="txt"><b>ሲቢኢ ብር / CBE Bank</b><span>የባንክ ዝውውር</span></span>
+            <span class="dot"></span>
+          </label>
+          <label class="pay">
+            <input type="radio" name="custPayment" value="cod">
+            <span class="ico">💵</span>
+            <span class="txt"><b>እቃው ሲደርስ እከፍላለሁ</b><span>Cash on Delivery</span></span>
+            <span class="dot"></span>
+          </label>
+        </div>
       </div>
 
-      <button class="checkout-btn" id="submitOrderBtn">ትዕዛዝ አጠናቅቅ (Order Now)</button>
+      <div class="drawer-foot">
+        <div class="foot-total"><small>ጠቅላላ</small><strong id="footTotal">0 ብር</strong></div>
+        <button type="button" class="primary-btn" id="submitOrderBtn">ትዕዛዝ አጠናቅቅ</button>
+      </div>
     </div>
 
     <!-- Success View -->
-    <div class="success-view" id="successView">
+    <div class="success is-hidden" id="successView">
       <div class="success-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
       </div>
-      <h3 style="font-size: 18px; margin-bottom: 8px;">ትዕዛዝዎ በተሳካ ሁኔታ ተልኳል!</h3>
-      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">የነጃሺ ማርኬቲንግ ሰራተኞች በስልክዎ ደውለው እቃውን በቅርቡ ያደርሱልዎታል።</p>
-      <button class="checkout-btn" id="closeSuccessBtn">ወደ መደብሩ ተመለስ</button>
+      <h3>ትዕዛዝዎ በተሳካ ሁኔታ ተልኳል!</h3>
+      <div class="order-id">የትዕዛዝ ቁጥር፡ <span id="orderIdText"></span></div>
+      <p>የነጃሺ ማርኬቲንግ ሰራተኞች በስልክዎ ደውለው እቃውን በቅርቡ ያደርሱልዎታል።</p>
+      <div class="contact-row" id="successContact"></div>
+      <button type="button" class="primary-btn" id="closeSuccessBtn">ወደ መደብሩ ተመለስ</button>
     </div>
   </div>
 
   <script>
-    // ቴሌግራም WebApp ማስጀመሪያ
-    const tg = window.Telegram?.WebApp;
-    if (tg) {
-      tg.expand(); // ስክሪኑን ሙሉ እንዲሞላ
-      tg.enableClosingConfirmation();
-    }
+    /* ═══════════ SETTINGS — እዚህ ያስተካክሉ ═══════════ */
+    const CONFIG = {
+      LOGO_URL: 'logo.png',     // የሎጎ ፋይል (ከ index.html አጠገብ ያስቀምጡ) ወይም ሙሉ ሊንክ። ከሌለ "N" ይታያል
+      STORE_PHONE: '',          // ምሳሌ፡ '0911000000'  → "ይደውሉልን" ቁልፍ ይታያል
+      TELEGRAM_USERNAME: ''     // ምሳሌ፡ 'NejashiSupport' (ያለ @)  → "ቴሌግራም" ቁልፍ ይታያል
+    };
 
+    /* ═══════════ Telegram WebApp ═══════════ */
+    const tg = window.Telegram?.WebApp;
+    const attempt = fn => { try { return fn(); } catch (e) {} };
+    if (tg) {
+      attempt(() => tg.ready());
+      attempt(() => tg.expand());                // ስክሪኑን ሙሉ እንዲሞላ
+      attempt(() => tg.setHeaderColor('#0E1127'));
+      attempt(() => tg.setBackgroundColor('#0E1127'));
+    }
+    const haptic = (type = 'light') => attempt(() => tg?.HapticFeedback?.impactOccurred(type));
+    const hapticNote = (type) => attempt(() => tg?.HapticFeedback?.notificationOccurred(type));
+
+    /* ═══════════ Products ═══════════ */
     // የነጃሺ ማርኬቲንግ እቃዎች ናሙና (Real-world products)
     const PRODUCTS = [
-      {
-        id: 1,
-        title: "2-in-1 የኤሌክትሪክ ስጋ መፍጫ እና ብሌንደር",
-        category: "kitchen",
-        price: 2800,
-        img: "https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=400&q=80"
-      },
-      {
-        id: 2,
-        title: "የሚታጠፍ አነስተኛ የልብስ ማጠቢያ ማሽን (Portable)",
-        category: "home",
-        price: 4500,
-        img: "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=400&q=80"
-      },
-      {
-        id: 3,
-        title: "VGR ዘመናዊ ሪቻርጀብል የፀጉር መከርከሚያ",
-        category: "beauty",
-        price: 1400,
-        img: "https://images.unsplash.com/photo-1621607512214-68297480165e?w=400&q=80"
-      },
-      {
-        id: 4,
-        title: "ስማርት ሮቦት ቫኪዩም ክሊነር (Smart Robot Vacuum)",
-        category: "electronics",
-        price: 6200,
-        img: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=400&q=80"
-      },
-      {
-        id: 5,
-        title: "የአየር መጥበሻ (Digital Air Fryer 6L)",
-        category: "kitchen",
-        price: 5900,
-        img: "https://images.unsplash.com/photo-1585515320310-259814833e62?w=400&q=80"
-      },
-      {
-        id: 6,
-        title: "USB ስማርት የውሃ መሳቢያ ፓምፕ (Automatic Pump)",
-        category: "home",
-        price: 850,
-        img: "https://images.unsplash.com/photo-1548839140-29a749e1bc4e?w=400&q=80"
-      }
+      { id: 1, title: "2-in-1 የኤሌክትሪክ ስጋ መፍጫ እና ብሌንደር", category: "kitchen", price: 2800,
+        img: "https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=400&q=80" },
+      { id: 2, title: "የሚታጠፍ አነስተኛ የልብስ ማጠቢያ ማሽን (Portable)", category: "home", price: 4500,
+        img: "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=400&q=80" },
+      { id: 3, title: "VGR ዘመናዊ ሪቻርጀብል የፀጉር መከርከሚያ", category: "beauty", price: 1400,
+        img: "https://images.unsplash.com/photo-1621607512214-68297480165e?w=400&q=80" },
+      { id: 4, title: "ስማርት ሮቦት ቫኪዩም ክሊነር (Smart Robot Vacuum)", category: "electronics", price: 6200,
+        img: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=400&q=80" },
+      { id: 5, title: "የአየር መጥበሻ (Digital Air Fryer 6L)", category: "kitchen", price: 5900,
+        img: "https://images.unsplash.com/photo-1585515320310-259814833e62?w=400&q=80" },
+      { id: 6, title: "USB ስማርት የውሃ መሳቢያ ፓምፕ (Automatic Pump)", category: "home", price: 850,
+        img: "https://images.unsplash.com/photo-1548839140-29a749e1bc4e?w=400&q=80" }
     ];
 
+    const CATS = {
+      kitchen:     { label: 'የወጥ ቤት',     icon: '🍳' },
+      electronics: { label: 'ኤሌክትሮኒክስ',  icon: '🔌' },
+      home:        { label: 'የቤት እቃዎች',   icon: '🏠' },
+      beauty:      { label: 'ውበትና ንጽህና', icon: '✨' }
+    };
+
+    const FALLBACK_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23E6F2EA'/%3E%3Cg fill='none' stroke='%230F5132' stroke-width='3' stroke-linejoin='round' opacity='.55'%3E%3Cpath d='M50 24 74 37v26L50 76 26 63V37z'/%3E%3Cpath d='M26 37l24 13 24-13M50 50v26'/%3E%3C/g%3E%3C/svg%3E";
+
+    /* ═══════════ Helpers ═══════════ */
+    const $ = s => document.querySelector(s);
+    const fmt = n => n.toLocaleString('en-US');
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const byId = id => PRODUCTS.find(p => p.id === id);
+    const store = {
+      get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+      set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+    };
+
+    /* ═══════════ State (cart, favourites & customer are remembered) ═══════════ */
     let cart = {};
-    let activeCategory = 'all';
-    let searchQuery = '';
+    const savedCart = store.get('nj_cart', {});
+    Object.entries(savedCart).forEach(([id, q]) => { if (byId(+id) && q > 0) cart[+id] = Math.min(+q, 99); });
+    const favs = new Set((store.get('nj_favs', []) || []).filter(id => byId(id)));
+    let activeCategory = 'all', searchQuery = '', sortMode = 'default';
 
-    // Render Products
-    function renderProducts() {
-      const grid = document.getElementById('productGrid');
-      const filtered = PRODUCTS.filter(p => {
-        const matchCat = activeCategory === 'all' || p.category === activeCategory;
-        const matchSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchCat && matchSearch;
+    /* ═══════════ Logo ═══════════ */
+    function mountLogos() {
+      document.querySelectorAll('[data-logo]').forEach(el => {
+        el.textContent = 'N';                                  // fallback
+        if (!CONFIG.LOGO_URL) return;
+        const img = new Image();
+        img.alt = 'Nejashi';
+        img.onload = () => { el.textContent = ''; el.appendChild(img); };
+        img.src = CONFIG.LOGO_URL;                              // if it fails, "N" stays
       });
+    }
 
-      if (filtered.length === 0) {
-        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">ምንም የተገኘ እቃ የለም</div>`;
+    /* ═══════════ Greeting + prefill from Telegram ═══════════ */
+    const tgUser = tg?.initDataUnsafe?.user;
+    if (tgUser?.first_name) $('#greeting').textContent = `ሰላም ${tgUser.first_name}!`;
+
+    /* ═══════════ Categories ═══════════ */
+    function renderCats() {
+      const items = [
+        { key: 'all', html: 'ሁሉም እቃዎች' },
+        { key: 'fav', html: `<span class="heart-dot">♥</span> የምወዳቸው${favs.size ? ' (' + favs.size + ')' : ''}` },
+        ...Object.entries(CATS).map(([key, c]) => ({ key, html: `${c.icon} ${c.label}` }))
+      ];
+      $('#catList').innerHTML = items.map(i =>
+        `<button type="button" class="cat-btn${i.key === activeCategory ? ' active' : ''}" data-cat="${i.key}" role="tab" aria-selected="${i.key === activeCategory}">${i.html}</button>`
+      ).join('');
+    }
+
+    /* ═══════════ Products ═══════════ */
+    function getVisible() {
+      const q = searchQuery.trim().toLowerCase();
+      let list = PRODUCTS.filter(p => {
+        const inCat = activeCategory === 'all' ? true : activeCategory === 'fav' ? favs.has(p.id) : p.category === activeCategory;
+        const hay = (p.title + ' ' + (CATS[p.category]?.label || '')).toLowerCase();
+        return inCat && (!q || hay.includes(q));
+      });
+      if (sortMode === 'asc') list = [...list].sort((a, b) => a.price - b.price);
+      if (sortMode === 'desc') list = [...list].sort((a, b) => b.price - a.price);
+      return list;
+    }
+
+    function controlsHTML(id) {
+      const qty = cart[id] || 0;
+      if (!qty) return `<button type="button" class="add-btn" data-action="add" data-id="${id}">+ ጨምር</button>`;
+      return `<div class="stepper" role="group" aria-label="ብዛት">
+        <button type="button" data-action="dec" data-id="${id}" aria-label="ቀንስ">−</button>
+        <span aria-live="polite">${qty}</span>
+        <button type="button" data-action="inc" data-id="${id}" aria-label="ጨምር">+</button>
+      </div>`;
+    }
+
+    const HEART = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+    const TRASH = '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+
+    function renderProducts() {
+      const grid = $('#productGrid');
+      const list = getVisible();
+      $('#resultCount').textContent = `${list.length} እቃዎች`;
+
+      if (!list.length) {
+        const isFav = activeCategory === 'fav' && !searchQuery.trim();
+        grid.innerHTML = `<div class="empty">
+          <strong>${isFav ? 'ገና የምወዳቸው እቃ የሉም' : 'ምንም የተገኘ እቃ የለም'}</strong>
+          <p>${isFav ? 'በእቃው ላይ ያለውን ልብ ♥ ምልክት ይንኩ' : 'በሌላ ቃል ይሞክሩ ወይም ሁሉንም እቃዎች ይመልከቱ'}</p>
+          <button type="button" class="ghost-btn" data-action="show-all">ሁሉንም እቃዎች አሳይ</button>
+        </div>`;
         return;
       }
 
-      grid.innerHTML = filtered.map(p => `
-        <div class="card">
-          <img src="${p.img}" class="card-img" alt="${p.title}">
+      grid.innerHTML = list.map(p => `
+        <article class="card" data-card="${p.id}">
+          <div class="card-media">
+            <img src="${esc(p.img)}" alt="${esc(p.title)}" loading="lazy" decoding="async">
+            <button type="button" class="fav${favs.has(p.id) ? ' on' : ''}" data-action="fav" data-id="${p.id}" aria-pressed="${favs.has(p.id)}" aria-label="ወደ ምወዳቸው ጨምር">${HEART}</button>
+          </div>
           <div class="card-body">
-            <span class="card-cat">${p.category}</span>
-            <div class="card-title">${p.title}</div>
-            <div class="card-footer">
-              <span class="price">${p.price.toLocaleString()} ብር</span>
-              <button class="add-btn" onclick="addToCart(${p.id})">+</button>
+            <span class="card-cat">${esc(CATS[p.category]?.label || p.category)}</span>
+            <h3 class="card-title">${esc(p.title)}</h3>
+            <div class="card-foot">
+              <span class="price">${fmt(p.price)}<small>ብር</small></span>
+              <div class="slot">${controlsHTML(p.id)}</div>
             </div>
           </div>
-        </div>
-      `).join('');
+        </article>`).join('');
     }
 
-    // Cart Management
-    window.addToCart = function(id) {
-      cart[id] = (cart[id] || 0) + 1;
-      if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-      updateCartUI();
-    };
+    // image load / error handling (events don't bubble, so use capture)
+    $('#productGrid').addEventListener('load', e => {
+      if (e.target.tagName === 'IMG') e.target.closest('.card-media')?.classList.add('loaded');
+    }, true);
+    $('#productGrid').addEventListener('error', e => {
+      if (e.target.tagName === 'IMG' && e.target.src !== FALLBACK_IMG) e.target.src = FALLBACK_IMG;
+    }, true);
 
-    window.changeQty = function(id, delta) {
-      if (!cart[id]) return;
-      cart[id] += delta;
-      if (cart[id] <= 0) delete cart[id];
-      if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-      updateCartUI();
-      renderCartDrawer();
-    };
+    function refreshCardControls(id) {
+      const slot = document.querySelector(`[data-card="${id}"] .slot`);
+      if (slot) slot.innerHTML = controlsHTML(id);
+    }
 
-    function updateCartUI() {
-      const count = Object.values(cart).reduce((a, b) => a + b, 0);
-      const total = Object.entries(cart).reduce((sum, [id, qty]) => {
-        const p = PRODUCTS.find(x => x.id === +id);
-        return sum + (p.price * qty);
-      }, 0);
+    /* ═══════════ Cart ═══════════ */
+    const persistCart = () => store.set('nj_cart', cart);
+    const cartCount = () => Object.values(cart).reduce((a, b) => a + b, 0);
+    const cartTotal = () => Object.entries(cart).reduce((s, [id, q]) => s + byId(+id).price * q, 0);
 
-      const cartBar = document.getElementById('cartBar');
+    function changeQty(id, delta) {
+      const next = (cart[id] || 0) + delta;
+      if (next <= 0) delete cart[id]; else cart[id] = Math.min(next, 99);
+      haptic('light');
+      persistCart();
+      refreshCardControls(id);
+      updateCartUI(true);
+      if (drawer.classList.contains('open')) renderCartDrawer();
+    }
+
+    function updateCartUI(animate) {
+      const count = cartCount(), total = cartTotal();
+      const bar = $('#cartBar');
       if (count > 0) {
-        cartBar.classList.remove('hide');
-        document.getElementById('cartCount').textContent = count;
-        document.getElementById('cartTotal').textContent = `ETB ${total.toLocaleString()}`;
+        bar.classList.remove('hide');
+        $('#cartCount').textContent = count;
+        $('#cartTotal').textContent = `ETB ${fmt(total)}`;
+        if (animate) { bar.classList.remove('bump'); void bar.offsetWidth; bar.classList.add('bump'); }
+        attempt(() => tg?.enableClosingConfirmation());
       } else {
-        cartBar.classList.add('hide');
+        bar.classList.add('hide');
+        attempt(() => tg?.disableClosingConfirmation());
       }
     }
 
     function renderCartDrawer() {
-      const container = document.getElementById('cartItemsContainer');
-      const items = Object.entries(cart);
-      if (items.length === 0) {
-        closeDrawerModal();
-        return;
-      }
-
-      container.innerHTML = items.map(([id, qty]) => {
-        const p = PRODUCTS.find(x => x.id === +id);
-        return `
-          <div class="cart-item">
-            <div class="item-meta">
-              <h4>${p.title}</h4>
-              <p>${(p.price * qty).toLocaleString()} ብር (${p.price} x ${qty})</p>
-            </div>
-            <div class="qty-ctl">
-              <button class="qty-btn" onclick="changeQty(${p.id}, -1)">-</button>
-              <span style="font-weight:700; font-size:14px;">${qty}</span>
-              <button class="qty-btn" onclick="changeQty(${p.id}, 1)">+</button>
-            </div>
+      const entries = Object.entries(cart);
+      if (!entries.length) { closeDrawerModal(); return; }
+      $('#drawerCount').textContent = `(${cartCount()})`;
+      $('#footTotal').textContent = `${fmt(cartTotal())} ብር`;
+      $('#cartItemsContainer').innerHTML = entries.map(([id, qty]) => {
+        const p = byId(+id);
+        return `<div class="cart-item">
+          <img src="${esc(p.img)}" alt="" onerror="this.onerror=null;this.src=FALLBACK_IMG">
+          <div class="item-meta">
+            <h4>${esc(p.title)}</h4>
+            <div class="unit">${fmt(p.price)} ብር × ${qty}</div>
+            <div class="line">${fmt(p.price * qty)} ብር</div>
           </div>
-        `;
+          <div class="mini-step">
+            <button type="button" class="${qty === 1 ? 'danger' : ''}" data-action="dec" data-id="${p.id}" aria-label="${qty === 1 ? 'አስወግድ' : 'ቀንስ'}">${qty === 1 ? TRASH : '−'}</button>
+            <span>${qty}</span>
+            <button type="button" data-action="inc" data-id="${p.id}" aria-label="ጨምር">+</button>
+          </div>
+        </div>`;
       }).join('');
     }
 
-    // Drawer Open/Close
-    const overlay = document.getElementById('overlay');
-    const drawer = document.getElementById('drawer');
+    /* ═══════════ Drawer open / close ═══════════ */
+    const overlay = $('#overlay');
+    const drawer = $('#drawer');
 
-    document.getElementById('cartBar').onclick = () => {
+    function openDrawer() {
+      $('#cartView').classList.remove('is-hidden');
+      $('#successView').classList.add('is-hidden');
       renderCartDrawer();
       overlay.classList.add('open');
       drawer.classList.add('open');
-    };
+      document.body.classList.add('lock');
+    }
 
     function closeDrawerModal() {
       overlay.classList.remove('open');
       drawer.classList.remove('open');
+      document.body.classList.remove('lock');
       setTimeout(() => {
-        document.getElementById('cartView').style.display = 'block';
-        document.getElementById('successView').style.display = 'none';
-      }, 300);
+        $('#cartView').classList.remove('is-hidden');
+        $('#successView').classList.add('is-hidden');
+      }, 330);
     }
 
-    document.getElementById('closeDrawer').onclick = closeDrawerModal;
+    $('#cartBar').onclick = openDrawer;
+    $('#closeDrawer').onclick = closeDrawerModal;
+    $('#closeSuccessBtn').onclick = closeDrawerModal;
     overlay.onclick = closeDrawerModal;
-    document.getElementById('closeSuccessBtn').onclick = closeDrawerModal;
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && drawer.classList.contains('open')) closeDrawerModal(); });
 
-    // Filter Buttons
-    document.querySelectorAll('.cat-btn').forEach(btn => {
-      btn.onclick = () => {
-        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        activeCategory = btn.dataset.cat;
-        renderProducts();
-      };
-    });
-
-    // Search
-    document.getElementById('searchInput').oninput = (e) => {
-      searchQuery = e.target.value;
-      renderProducts();
+    $('#clearCart').onclick = () => {
+      if (!confirm('ሁሉንም እቃዎች ከጋሪ ላጥፋ?')) return;
+      cart = {}; persistCart(); renderProducts(); updateCartUI(); closeDrawerModal();
+      toast('ጋሪው ተጸድቷል');
     };
 
-    // Submit Order
-    document.getElementById('submitOrderBtn').onclick = () => {
-      const name = document.getElementById('custName').value.trim();
-      const phone = document.getElementById('custPhone').value.trim();
-      const addr = document.getElementById('custAddress').value.trim();
-      const pay = document.getElementById('custPayment').value;
+    /* ═══════════ Global click handling ═══════════ */
+    document.addEventListener('click', e => {
+      const cat = e.target.closest('[data-cat]');
+      if (cat) {
+        activeCategory = cat.dataset.cat;
+        renderCats(); renderProducts();
+        $('#catList').querySelector('.active')?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+        return;
+      }
+      const tgLink = e.target.closest('a[data-tglink]');
+      if (tgLink && tg?.openTelegramLink) { e.preventDefault(); tg.openTelegramLink(tgLink.href); return; }
 
-      if (!name || !phone || !addr) {
-        alert('እባክዎ ስም፣ ስልክ እና አድራሻ በትክክል ያስገቡ!');
+      const el = e.target.closest('[data-action]');
+      if (!el) return;
+      const id = +el.dataset.id;
+      switch (el.dataset.action) {
+        case 'add': case 'inc': changeQty(id, 1); break;
+        case 'dec': changeQty(id, -1); break;
+        case 'fav':
+          favs.has(id) ? favs.delete(id) : favs.add(id);
+          store.set('nj_favs', [...favs]);
+          haptic('light');
+          el.classList.toggle('on', favs.has(id));
+          el.setAttribute('aria-pressed', favs.has(id));
+          renderCats();
+          if (activeCategory === 'fav') renderProducts();
+          break;
+        case 'show-all':
+          activeCategory = 'all'; searchQuery = ''; $('#searchInput').value = ''; $('#searchClear').classList.add('is-hidden');
+          renderCats(); renderProducts(); break;
+      }
+    });
+
+    /* ═══════════ Search & sort ═══════════ */
+    $('#searchInput').addEventListener('input', e => {
+      searchQuery = e.target.value;
+      $('#searchClear').classList.toggle('is-hidden', !searchQuery);
+      renderProducts();
+    });
+    $('#searchClear').onclick = () => {
+      searchQuery = ''; $('#searchInput').value = ''; $('#searchClear').classList.add('is-hidden');
+      $('#searchInput').focus(); renderProducts();
+    };
+    $('#sortSel').onchange = e => { sortMode = e.target.value; renderProducts(); };
+
+    /* ═══════════ Toast ═══════════ */
+    let toastTimer;
+    function toast(msg) {
+      const t = $('#toast');
+      t.textContent = msg; t.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+    }
+
+    /* ═══════════ Contact buttons (shown only if set in CONFIG) ═══════════ */
+    function contactHTML() {
+      let h = '';
+      if (CONFIG.STORE_PHONE) h += `<a class="contact-btn" href="tel:${esc(CONFIG.STORE_PHONE)}">📞 ይደውሉልን</a>`;
+      if (CONFIG.TELEGRAM_USERNAME) h += `<a class="contact-btn" data-tglink href="https://t.me/${esc(CONFIG.TELEGRAM_USERNAME)}" target="_blank" rel="noopener">✈️ ቴሌግራም</a>`;
+      return h;
+    }
+    $('#helpRow').innerHTML = contactHTML();
+    $('#successContact').innerHTML = contactHTML();
+    if (!contactHTML()) { $('#helpRow').classList.add('is-hidden'); $('#successContact').classList.add('is-hidden'); }
+
+    /* ═══════════ Checkout form ═══════════ */
+    const saved = store.get('nj_customer', {});
+    $('#custName').value = saved.name || [tgUser?.first_name, tgUser?.last_name].filter(Boolean).join(' ');
+    $('#custPhone').value = saved.phone || '';
+    $('#custAddress').value = saved.address || '';
+    if (saved.payment) {
+      const r = document.querySelector(`input[name="custPayment"][value="${saved.payment}"]`);
+      if (r) r.checked = true;
+    }
+
+    // ስልክ: 09xxxxxxxx / 07xxxxxxxx / +2519xxxxxxxx / 2519xxxxxxxx
+    function normalizePhone(raw) {
+      const m = raw.replace(/[\s\-()]/g, '').match(/^(?:\+?251|0)?([79]\d{8})$/);
+      return m ? '0' + m[1] : null;
+    }
+    const setInvalid = (fieldId, bad) => $('#' + fieldId).classList.toggle('invalid', bad);
+    ['custName:f-name', 'custPhone:f-phone', 'custAddress:f-addr'].forEach(pair => {
+      const [inp, f] = pair.split(':');
+      $('#' + inp).addEventListener('input', () => setInvalid(f, false));
+    });
+
+    const makeOrderId = () => 'NJ-' + Date.now().toString(36).slice(-5).toUpperCase();
+
+    $('#submitOrderBtn').onclick = () => {
+      if (!Object.keys(cart).length) return;
+      const name = $('#custName').value.trim();
+      const phone = normalizePhone($('#custPhone').value);
+      const addr = $('#custAddress').value.trim();
+      const pay = document.querySelector('input[name="custPayment"]:checked').value;
+
+      const badName = name.length < 2, badPhone = !phone, badAddr = addr.length < 3;
+      setInvalid('f-name', badName); setInvalid('f-phone', badPhone); setInvalid('f-addr', badAddr);
+      if (badName || badPhone || badAddr) {
+        hapticNote('error');
+        toast('እባክዎ ቀይ ምልክት የተደረገባቸውን መረጃዎች ያስተካክሉ');
+        const firstBad = badName ? '#custName' : badPhone ? '#custPhone' : '#custAddress';
+        $(firstBad).scrollIntoView({ block: 'center', behavior: 'smooth' });
+        $(firstBad).focus({ preventScroll: true });
         return;
       }
 
       // ትዕዛዝ ዝግጅት
+      const orderId = makeOrderId();
       const orderData = {
-        name, phone, address: addr, payment: pay,
-        items: Object.entries(cart).map(([id, qty]) => {
-          const p = PRODUCTS.find(x => x.id === +id);
-          return `${p.title} (x${qty})`;
-        })
+        orderId, name, phone, address: addr, payment: pay, total: cartTotal(),
+        items: Object.entries(cart).map(([id, qty]) => `${byId(+id).title} (x${qty})`)
       };
-
-      // ቴሌግራም ቦት ላይ ከሆነ ዳታውን ለቦቱ መላክ
-      if (tg && tg.sendData) {
-        tg.sendData(JSON.stringify(orderData));
-      }
+      store.set('nj_customer', { name, phone, address: addr, payment: pay });
 
       // የድል ስክሪን ማሳየት
-      document.getElementById('cartView').style.display = 'none';
-      document.getElementById('successView').style.display = 'block';
-      cart = {};
-      updateCartUI();
+      $('#orderIdText').textContent = orderId;
+      $('#cartView').classList.add('is-hidden');
+      $('#successView').classList.remove('is-hidden');
+      hapticNote('success');
+      cart = {}; persistCart(); renderProducts(); updateCartUI();
+
+      // ቴሌግራም ቦት ላይ ከሆነ ዳታውን ለቦቱ መላክ (ደንበኛው የድል ስክሪኑን እንዲያይ ትንሽ ዘግይቶ ይላካል)
+      if (tg && tg.sendData) {
+        attempt(() => tg.disableClosingConfirmation());
+        setTimeout(() => tg.sendData(JSON.stringify(orderData)), 1800);
+      }
     };
 
-    // Initial Load
+    /* ═══════════ Initial load ═══════════ */
+    mountLogos();
+    renderCats();
     renderProducts();
+    updateCartUI();
   </script>
 </body>
 </html>
